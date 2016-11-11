@@ -1,5 +1,6 @@
 package com.example.android.repertoire;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.ContentValues;
@@ -13,17 +14,17 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -35,12 +36,11 @@ import android.widget.Toast;
 
 import com.example.android.repertoire.Data.ProductContract;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static com.example.android.repertoire.Data.ProductContract.ProductEntry;
-import static com.example.android.repertoire.Data.ProductProvider.LOG_TAG;
 
 /**
  * Created by Student on 05/11/2016.
@@ -48,15 +48,35 @@ import static com.example.android.repertoire.Data.ProductProvider.LOG_TAG;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private EditText mImageEditText;
+    private Button mOrder;
 
+    private Button mDecrement;
 
+    private Button mIncrement;
+
+    private Uri mUri;
+
+    private static final String LOG_TAG = EditorActivity.class.getSimpleName();
+
+    private static final String STATE_URI = "STATE_URI";
+
+    private static final int SEND_EMAIL_REQUEST = 2;
+
+    private static final int PICK_IMAGE_REQUEST = 1;
+
+    private static final int URL_LOADER = 0;
+
+    private boolean mProductChanged = false;
+
+    private Uri mCurrentProductUri;
+
+    private TextView mImage_Uri;
 
     private EditText mNameEditText;
 
     private EditText mPriceEditText;
 
-    private ImageView mPicture;
+    private ImageView mImage;
 
     private Spinner mSizeSpinner;
 
@@ -64,32 +84,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     int quantity = 0;
 
-   private ByteArrayOutputStream img;
+    private int mSize = ProductEntry.SIZE_SMALL;
 
-    /**
-     * EditText field to enter the item's quantity
-     */
-    private EditText mQuantityEditText;
-
-    String imgDecodableString;
-
+    private FloatingActionButton mFab;
     /**
      * Size of the product. The possible values are:
      * 0 for small, 1 for medium, 2 for large.
      */
-    private int mSize = ProductEntry.SIZE_SMALL;
-
-    private static final int URL_LOADER = 0;
-
-    private Uri mCurrentProductUri;
-
-    private Uri mCurrentImageUri;
-
-    private boolean mProductChanged = false;
-
-    private static final int PICK_IMAGE_REQUEST = 0;
-
-
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -97,7 +98,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             return false;
         }
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +113,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             invalidateOptionsMenu();
         } else {
 
-            setTitle(getString(R.string.editor_activity_title_edit_pet));
+            setTitle(getString(R.string.editor_activity_title_edit_product));
             getLoaderManager().initLoader(URL_LOADER, null, this);
         }
 
@@ -122,116 +122,90 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mPriceEditText = (EditText) findViewById(R.id.edit_price);
         mSizeSpinner = (Spinner) findViewById(R.id.spinner_size);
         mQuantityTextView = (TextView) findViewById(R.id.quantity_text_view);
-        mPicture = (ImageView) findViewById(R.id.editor_image);
+        mImage = (ImageView) findViewById(R.id.editor_image);
+        mImage_Uri = (TextView) findViewById(R.id.image_uri);
+        mDecrement = (Button) findViewById(R.id.decrement_button);
+        mIncrement = (Button) findViewById(R.id.increment_button);
+        mOrder = (Button) findViewById(R.id.order_button);
 
 
         mNameEditText.setOnTouchListener(mTouchListener);
         mPriceEditText.setOnTouchListener(mTouchListener);
         mSizeSpinner.setOnTouchListener(mTouchListener);
         mQuantityTextView.setOnTouchListener(mTouchListener);
-        mPicture.setOnTouchListener(mTouchListener);
+        mImage.setOnTouchListener(mTouchListener);
 
+        ViewTreeObserver viewTreeObserver = mImage.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onGlobalLayout() {
+                mImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mImage.setImageBitmap(getBitmapFromUri(mUri));
+            }
+        });
+        mFab = (FloatingActionButton) findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openImageSelector();
+            }
+        });
+
+        mIncrement.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                quantity += 1;
+
+                mQuantityTextView.setText(Integer.toString(quantity));
+            }
+        });
+
+        mDecrement.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                quantity -= 1;
+
+                if (quantity < 0) {
+                    quantity = 0;
+                }
+                mQuantityTextView.setText(Integer.toString(quantity));
+            }
+        });
         setupSpinner();
-
-
-        Button imageButton = (Button) findViewById(R.id.image_button);
-        imageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent;
-                if (Build.VERSION.SDK_INT < 19) {
-                    intent = new Intent(Intent.ACTION_GET_CONTENT);
-                } else {
-                    intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                }
-                intent.setType("image/*");
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-            }
-        });
-
-        Button orderButton = (Button) findViewById(R.id.order_button);
-        orderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Formulate the current record data into an email message to send to supplier
-                //including product name, description and the name of the supplier
-                //Get the name for use in the subject line and the subject text
-
-                Editable nameEditable = mNameEditText.getText();
-                String name = nameEditable.toString();
-
-                //Get the description for use in the body of the email
-
-                Editable descriptionEditable = mPriceEditText.getText();
-                String description = descriptionEditable.toString();
-
-                //Get the manufacturer for use in the body of the email
-
-                Editable manufacturerEditable = mQuantityEditText.getText();
-                String manufacturer = manufacturerEditable.toString();
-                String emailMessage = ("Please order the following product using the standard order amount: \n" +
-                        "\n" + "Name: " + name +
-                        "\n" + "Price: " + description +
-                        "\n" + "Quantity: " + manufacturer);
-
-                //Call the intent that launches the mail client to send the email including the subject and body
-
-                Intent intent = new Intent(Intent.ACTION_SENDTO);
-                intent.setData(Uri.parse("mailto:"));
-                intent.putExtra(Intent.EXTRA_SUBJECT,
-                        getString(R.string.email_subject, name));
-                intent.putExtra(Intent.EXTRA_TEXT, emailMessage);
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(intent);
-                }
-            }
-        });
-
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
-        // If the request code seen here doesn't match, it's the response to some other intent,
-        // and the below code shouldn't run at all.
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+        if (mUri != null)
+            outState.putString(STATE_URI, mUri.toString());
+    }
 
-            if (resultData != null) {
-                mCurrentImageUri = resultData.getData();
-                Log.i(LOG_TAG, "Uri: " + mCurrentImageUri.toString());
-                mPicture.setImageBitmap(getBitmapFromUri(mCurrentImageUri));
-            }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        if (savedInstanceState.containsKey(STATE_URI) &&
+                !savedInstanceState.getString(STATE_URI).equals("")) {
+            mUri = Uri.parse(savedInstanceState.getString(STATE_URI));
+            mImage_Uri.setText(mUri.toString());
         }
     }
 
-    private Bitmap getBitmapFromUri(Uri uri) {
+    public void openImageSelector() {
+        Intent intent;
 
-        ParcelFileDescriptor parcelFileDescriptor = null;
-        try {
-            parcelFileDescriptor =
-                    getContentResolver().openFileDescriptor(uri, "r");
-            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-            Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-            parcelFileDescriptor.close();
-            return image;
-        } catch (Exception e) {
-            Log.e(LOG_TAG, "Failed to load image.", e);
-            return null;
-        } finally {
-            try {
-                if (parcelFileDescriptor != null) {
-                    parcelFileDescriptor.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.e(LOG_TAG, "Error closing ParcelFile Descriptor");
-            }
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+        } else {
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
         }
+
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
 
     /**
@@ -260,9 +234,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selection = (String) parent.getItemAtPosition(position);
                 if (!TextUtils.isEmpty(selection)) {
-                    if (selection.equals(getString(R.string.gender_male))) {
+                    if (selection.equals(getString(R.string.size_large))) {
                         mSize = ProductEntry.SIZE_LARGE;
-                    } else if (selection.equals(getString(R.string.gender_female))) {
+                    } else if (selection.equals(getString(R.string.size_medium))) {
                         mSize = ProductEntry.SIZE_MEDIUM;
                     } else {
                         mSize = ProductEntry.SIZE_SMALL;
@@ -283,13 +257,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      * Get user input from editor and save item into database locally.
      */
 
-    private void saveProduct() {
+    public void saveProduct() {
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
 
         String nameString = mNameEditText.getText().toString().trim();
         String quantityString = mQuantityTextView.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
+        String imageString = mImage_Uri.getText().toString().trim();
 
 
         // Check if this is supposed to be a new item
@@ -308,13 +283,11 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         // Create a ContentValues object where column names are the keys,
         // and item attributes from the editor are the values.
-
-
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);
-        values.put(ProductEntry.COLUMN_PRODUCT_IMAGE,img.toByteArray());
+        values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageString);
 
         // If the quantity is not provided by the user, don't try to parse the string into an
         // integer value. Use 0 by default.
@@ -323,7 +296,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (!TextUtils.isEmpty(quantityString)) {
             quantity = Integer.parseInt(quantityString);
         }
-        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
+        values.put(ProductEntry.COLUMN_PRODUCT_SIZE, quantity);
 
         // If the price is not provided by the user, don't try to parse the string into an
         // integer value. Use 0 by default.
@@ -368,12 +341,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             if (rowsAffected == 0) {
                 // If no rows were affected, then there was an error with the update.
 
-                Toast.makeText(this, getString(R.string.editor_update_pet_failed),
+                Toast.makeText(this, getString(R.string.editor_update_product_failed),
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the update was successful and we can display a toast.
 
-                Toast.makeText(this, getString(R.string.editor_update_pet_successful),
+                Toast.makeText(this, getString(R.string.editor_update_product_successful),
                         Toast.LENGTH_SHORT).show();
             }
         }
@@ -412,18 +385,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         quantityTextView.setText("" + quantity);
     }
 
-    /**
-     * Calculates the price of the order.
-     *
-     * @return Total price.
-     */
-    private int calculatePrice() {
-
-        int Baseprice = Integer.parseInt(mPriceEditText.getText().toString());
-
-        return (quantity * Baseprice);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu options from the res/menu/menu_editor.xml file.
@@ -446,6 +407,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
         // User clicked on a menu option in the app bar overflow menu
         switch (item.getItemId()) {
             // Respond to a click on the "Save" menu option
@@ -479,6 +443,79 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        // The ACTION_OPEN_DOCUMENT intent was sent with the request code READ_REQUEST_CODE.
+        // If the request code seen here doesn't match, it's the response to some other intent,
+        // and the below code shouldn't run at all.
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
+            // The document selected by the user won't be returned in the intent.
+            // Instead, a URI to that document will be contained in the return intent
+            // provided to this method as a parameter.  Pull that uri using "resultData.getData()"
+
+            if (resultData != null) {
+                mUri = resultData.getData();
+                Log.i(LOG_TAG, "Uri: " + mUri.toString());
+
+                mImage_Uri.setText(mUri.toString());
+                mImage.setImageBitmap(getBitmapFromUri(mUri));
+            }
+        } else if (requestCode == SEND_EMAIL_REQUEST && resultCode == Activity.RESULT_OK) {
+
+        }
+    }
+
+
+    public Bitmap getBitmapFromUri(Uri uri) {
+
+        if (uri == null || uri.toString().isEmpty())
+            return null;
+
+        // Get the dimensions of the View
+        int targetW = mImage.getWidth();
+        int targetH = mImage.getHeight();
+
+        InputStream input = null;
+        try {
+            input = this.getContentResolver().openInputStream(uri);
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(input, null, bmOptions);
+            input.close();
+
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+            bmOptions.inPurgeable = true;
+
+            input = this.getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(input, null, bmOptions);
+            input.close();
+            return bitmap;
+
+        } catch (FileNotFoundException fne) {
+            Log.e(LOG_TAG, "Failed to load image.", fne);
+            return null;
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to load image.", e);
+            return null;
+        } finally {
+            try {
+                input.close();
+            } catch (IOException ioe) {
+
+            }
+        }
+    }
     @Override
     public void onBackPressed() {
         if (!mProductChanged) {
@@ -526,38 +563,53 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         if (cursor.moveToFirst()) {
 
-            byte[] blob = cursor.getBlob(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_IMAGE));
-            Bitmap bmp = BitmapFactory.decodeByteArray(blob, 0, blob.length);
             String name = cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME));
             int price = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE));
-            int quantity = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
+            quantity = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
             int size = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SIZE));
 
             mNameEditText.setText(name);
             mPriceEditText.setText(Integer.toString(price));
             mQuantityTextView.setText(Integer.toString(quantity));
-            mPicture.setImageBitmap(BitmapFactory.decodeFile(String.valueOf(img)));
-
-            if (mImageEditText != null) {
-                Uri imageUri = Uri.parse(mImageEditText.getText().toString());
-                mPicture.setImageBitmap(getBitmapFromUri(imageUri));
-            }
+            mImage.setImageBitmap(BitmapFactory.decodeFile(String.valueOf(mImage)));
 
             switch (size) {
 
                 case ProductEntry.SIZE_LARGE:
-                    mSizeSpinner.setSelection(1);
+                    mSizeSpinner.setSelection(2);
                     break;
                 case ProductEntry.SIZE_MEDIUM:
-                    mSizeSpinner.setSelection(2);
+                    mSizeSpinner.setSelection(1);
                     break;
                 default:
                     mSizeSpinner.setSelection(0);
                     break;
 
             }
-        }
 
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.append("ProductName: " + name + "\n");
+            stringBuilder.append("Price: $" + Float.toString(price) + "\n");
+            stringBuilder.append("Min Quantity Required: $" + 10);
+
+            String emaill = getString(R.string.email_subject);
+            final Intent orderIntent = new Intent(Intent.ACTION_SENDTO);
+            orderIntent.setData(Uri.parse("mailto:")); // only email apps should handle this
+            orderIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {emaill, "new@outl.com"});
+            orderIntent.putExtra(Intent.EXTRA_SUBJECT, "Order Summary for Product: " + name);
+            orderIntent.putExtra(Intent.EXTRA_TEXT, stringBuilder.toString());
+
+            mOrder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (orderIntent.resolveActivity(getPackageManager()) != null) {
+                        startActivity(orderIntent);
+
+                    }
+        }
+    }
+            );}
     }
 
     @Override
@@ -567,6 +619,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mPriceEditText.setText("");
         mQuantityTextView.setInputType(0);
         mSizeSpinner.setSelection(0);
+        mImage_Uri.setText("");
 
 
     }
@@ -603,7 +656,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Delete" button, so delete the pet.
-                deletePet();
+                deleteProduct();
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -624,7 +677,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     /**
      * Perform the deletion of the pet in the database.
      */
-    private void deletePet() {
+    private void deleteProduct() {
 
         if (mCurrentProductUri != null) {
 
@@ -632,12 +685,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
             if (rowsDeleted == 0) {
 
-                Toast.makeText(this, getString(R.string.editor_delete_pet_failed), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_delete_product_failed), Toast.LENGTH_SHORT).show();
 
             } else {
-                Toast.makeText(this, getString(R.string.editor_delete_pet_successful), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.editor_delete_product_successful), Toast.LENGTH_SHORT).show();
             }
         }
         finish();
     }
 }
+

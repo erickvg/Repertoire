@@ -25,10 +25,11 @@
         android:textColor="#AEB6BD"
         tools:text="20 usd"
         android:layout_below="@id/name"/>
-    <ImageView
-        android:id="@+id/list_image"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_toRightOf="@id/summary"
-        android:layout_alignParentRight="true"/>
+    <TextView
+        android:id="@+id/size"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:text="S"
+        android:layout_below="@id/summary"/>
+
 </RelativeLayout>

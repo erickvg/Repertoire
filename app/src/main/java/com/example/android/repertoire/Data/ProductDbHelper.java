@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static com.example.android.repertoire.Data.ProductContract.*;
+import static com.example.android.repertoire.Data.ProductContract.ProductEntry;
 
 /**
  * Created by Student on 05/11/2016.
@@ -12,7 +12,7 @@ import static com.example.android.repertoire.Data.ProductContract.*;
 
 public class ProductDbHelper extends SQLiteOpenHelper{
 
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "inventory.db";
 
     public ProductDbHelper (Context context){
@@ -30,7 +30,7 @@ public class ProductDbHelper extends SQLiteOpenHelper{
                 + ProductEntry.COLUMN_PRODUCT_PRICE + " INTEGER NOT NULL DEFAULT 0, "
                 + ProductEntry.COLUMN_PRODUCT_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
                 + ProductEntry.COLUMN_PRODUCT_SIZE + " INTEGER NOT NULL, "
-                + ProductEntry.COLUMN_PRODUCT_IMAGE + " BLOB NOT NULL);";
+                + ProductEntry.COLUMN_PRODUCT_IMAGE + " TEXT NOT NULL);";
         db.execSQL(SQL_PRODUCT_TABLE);
 
     }
@@ -39,4 +39,5 @@ public class ProductDbHelper extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
+
 }

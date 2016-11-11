@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -30,14 +31,14 @@
             <!-- Name field -->
             <EditText
                 android:id="@+id/edit_name"
-                android:hint="@string/hint_pet_name"
+                android:hint="@string/hint_product_name"
                 android:inputType="textCapWords"
                 style="@style/EditorFieldStyle" />
 
             <!-- Breed field -->
             <EditText
                 android:id="@+id/edit_price"
-                android:hint="@string/hint_pet_breed"
+                android:hint="@string/hint_product_price"
                 android:inputType="number"
                 style="@style/EditorFieldStyle" />
         </LinearLayout>
@@ -52,7 +53,7 @@
 
         <!-- Label -->
         <TextView
-            android:text="@string/category_gender"
+            android:text="@string/category_size"
             style="@style/CategoryStyle" />
 
         <!-- Input field -->
@@ -72,7 +73,7 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Measurement category -->
+    <!-- Quantity category -->
     <LinearLayout
         android:id="@+id/container_measurement"
         android:layout_width="match_parent"
@@ -81,7 +82,7 @@
 
         <!-- Label -->
         <TextView
-            android:text="@string/category_measurement"
+            android:text="@string/category_quantity"
             style="@style/CategoryStyle" />
         <!-- Quantity buttons -->
             <LinearLayout
@@ -90,6 +91,7 @@
                 android:orientation="horizontal"/>
 
             <Button
+                android:id="@+id/decrement_button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:onClick="decrement"
@@ -101,12 +103,12 @@
                 android:layout_height="wrap_content"
                 android:paddingLeft="8dp"
                 android:paddingRight="8dp"
-                android:text="0"
                 android:textColor="@android:color/black"
                 android:textSize="16sp"
                 android:inputType="number"/>
 
             <Button
+                android:id="@+id/increment_button"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:onClick="increment"
@@ -131,21 +133,6 @@
                 android:layout_height="wrap_content"
                 android:onClick="submitOrder"
                 android:text="Place Order" />
-
-            <Button
-                android:id="@+id/reset_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reset Order"
-                android:layout_toRightOf="@id/order_button"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="IMAGE"
-                android:layout_gravity="center_horizontal"
-                android:id="@+id/image_button"
-                android:layout_toRightOf="@id/reset_button"/>
-
         </RelativeLayout>
     </LinearLayout>
     <ImageView
@@ -153,4 +140,18 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center"/>
+
+    <TextView
+        android:id="@+id/image_uri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        app:srcCompat="@drawable/ic_add_a_photo_white_48dp" />
 </LinearLayout>

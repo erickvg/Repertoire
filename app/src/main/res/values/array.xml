@@ -2,8 +2,8 @@
 <resources>
     <!-- These are the options displayed in the gender drop-down Spinner -->
     <string-array name="array_gender_options">
-        <item>@string/gender_unknown</item>
-        <item>@string/gender_male</item>
-        <item>@string/gender_female</item>
+        <item>@string/size_small</item>
+        <item>@string/size_large</item>
+        <item>@string/size_medium</item>
     </string-array>
 </resources>
