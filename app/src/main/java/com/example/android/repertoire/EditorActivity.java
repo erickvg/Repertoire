@@ -51,7 +51,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private int quantityValue;
 
-    private  String spinnerSize;
+    private String spinnerSize;
 
     private Button mOrder;
 
@@ -277,7 +277,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String imageString = mImage_Uri.getText().toString().trim();
 
 
-
         // Check if this is supposed to be a new item
         // and check if all the fields in the editor are blank
 
@@ -300,9 +299,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);
-        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,quantityString);
+        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantityString);
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageString);
-        values.put(ProductEntry.COLUMN_PRODUCT_SALES,quantityString);
+        values.put(ProductEntry.COLUMN_PRODUCT_SALES, quantityString);
 
         if (!TextUtils.isEmpty(quantityString)) {
             quantity = Integer.parseInt(quantityString);
@@ -528,6 +527,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             }
         }
     }
+
     @Override
     public void onBackPressed() {
         if (!mProductChanged) {
@@ -553,7 +553,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 ProductEntry.COLUMN_PRODUCT_PRICE,
                 ProductEntry.COLUMN_PRODUCT_SIZE,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
-                ProductEntry.COLUMN_PRODUCT_IMAGE};
+                ProductEntry.COLUMN_PRODUCT_IMAGE,
+                ProductEntry.COLUMN_PRODUCT_SALES};
 
 
         return new CursorLoader(
@@ -579,6 +580,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             int price = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE));
             quantity = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
             int size = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SIZE));
+            int sales = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SALES));
 
             mNameEditText.setText(name);
             mPriceEditText.setText(Integer.toString(price));
@@ -610,25 +612,26 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             stringBuilder.append("ProductName: " + name + "\n");
             stringBuilder.append("Price: $" + Float.toString(price) + "\n");
             stringBuilder.append("Min Quantity Required: $" + 10 + "\n");
-            stringBuilder.append("Size: " + spinnerSize +"\n");
+            stringBuilder.append("Size: " + spinnerSize + "\n");
             stringBuilder.append(mImage_Uri);
 
             String emaill = getString(R.string.email_subject);
             final Intent orderIntent = new Intent(Intent.ACTION_SENDTO);
             orderIntent.setData(Uri.parse("mailto:")); // only email apps should handle this
-            orderIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {emaill, "new@outl.com"});
+            orderIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{emaill, "new@outl.com"});
             orderIntent.putExtra(Intent.EXTRA_SUBJECT, "Order Summary for Product: " + name);
             orderIntent.putExtra(Intent.EXTRA_TEXT, stringBuilder.toString());
 
             mOrder.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (orderIntent.resolveActivity(getPackageManager()) != null) {
-                        startActivity(orderIntent);
-                    }
+                                          @Override
+                                          public void onClick(View view) {
+                                              if (orderIntent.resolveActivity(getPackageManager()) != null) {
+                                                  startActivity(orderIntent);
+                                              }
+                                          }
+                                      }
+            );
         }
-    }
-            );}
     }
 
     @Override
