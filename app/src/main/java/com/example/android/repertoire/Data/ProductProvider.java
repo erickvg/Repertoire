@@ -176,12 +176,6 @@ public class ProductProvider extends ContentProvider {
 
         }
 
-        Integer sales = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SALES);
-        if (sales != null && sales < 0){
-
-            throw new IllegalArgumentException("No Product has been sold yet.");
-        }
-
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
 
@@ -242,7 +236,13 @@ public class ProductProvider extends ContentProvider {
         Integer quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
         if (quantity != null && quantity < 0) {
 
-            throw new IllegalArgumentException("Product Requires qiantity");
+            throw new IllegalArgumentException("Product Requires quantity");
+        }
+
+        Integer sales = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SALES);
+        if (sales != null && sales < 0){
+
+            throw new IllegalArgumentException("Product sales are 0");
         }
 
         if (values.size() == 0) {
