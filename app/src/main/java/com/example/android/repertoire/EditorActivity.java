@@ -587,6 +587,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             mPriceEditText.setText(Integer.toString(price));
             mQuantityTextView.setText(Integer.toString(quantity));
             mImage.setImageBitmap(BitmapFactory.decodeFile(String.valueOf(mImage)));
+            mSalesTextView.setText(Integer.toString(sales));
 
 
             switch (size) {
