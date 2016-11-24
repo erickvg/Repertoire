@@ -275,6 +275,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String quantityString = mQuantityTextView.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
         String imageString = mImage_Uri.getText().toString().trim();
+        String salesString = mSalesTextView.getText().toString().trim();
 
 
         // Check if this is supposed to be a new item
@@ -301,7 +302,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantityString);
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageString);
-        values.put(ProductEntry.COLUMN_PRODUCT_SALES, quantityString);
+        values.put(ProductEntry.COLUMN_PRODUCT_SALES, salesString);
 
         if (!TextUtils.isEmpty(quantityString)) {
             quantity = Integer.parseInt(quantityString);
