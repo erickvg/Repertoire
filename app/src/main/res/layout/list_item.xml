@@ -7,6 +7,13 @@
     android:padding="@dimen/activity_margin"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <ImageView
+        android:id="@+id/image_item"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        tools:background="@drawable/ic_add_a_photo_white_48dp"
+        android:layout_alignParentLeft="true"/>
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
@@ -14,22 +21,55 @@
         android:fontFamily="sans-serif-medium"
         android:textAppearance="?android:textAppearanceMedium"
         android:textColor="#2B3D4D"
-        tools:text="T Shirt-yellow"/>
+        tools:text="T Shirt-yellow"
+        android:layout_toRightOf="@id/image_item"/>
 
     <TextView
-        android:id="@+id/summary"
+        android:id="@+id/price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
         android:textAppearance="?android:textAppearanceSmall"
         android:textColor="#AEB6BD"
         tools:text="20 usd"
-        android:layout_below="@id/name"/>
+        android:layout_below="@id/name"
+        android:layout_toRightOf="@id/image_item"/>
     <TextView
         android:id="@+id/size"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:text="S"
-        android:layout_below="@id/summary"/>
+        android:layout_below="@id/price"
+        android:layout_toRightOf="@id/image_item"/>
+
+    <Button
+        android:id="@+id/buy_button"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:text="@string/buy"
+        android:background="@color/colorPrimary"
+        android:textColor="#FFFFFF"
+        android:layout_alignParentRight="true"
+        tools:ignore="RtlHardcoded"
+        android:focusable="false" />
+
+    <TextView
+        android:id="@+id/sales"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Purchased: #"
+        android:layout_below="@id/buy_button"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"/>
+
+    <TextView
+        android:id="@+id/in_stock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sales"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        tools:text="In Stock: #"
+        android:textColor="@color/colorPrimary"/>
 
 </RelativeLayout>

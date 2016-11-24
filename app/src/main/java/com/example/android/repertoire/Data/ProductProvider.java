@@ -6,6 +6,8 @@ import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
@@ -85,20 +87,13 @@ public class ProductProvider extends ContentProvider {
 
                 cursor = database.query(ProductEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
-                // For the PETS code, query the pets table directly with the given
+                // For the Product code, query the pets table directly with the given
                 // projection, selection, selection arguments, and sort order. The cursor
-                // could contain multiple rows of the pets table.
-                // Perform database query on pets table
+                // could contain multiple rows of the product table.
+                // Perform database query on product table
                 break;
             case PRODUCT_ID:
-                // For the PET_ID code, extract out the ID from the URI.
-                // For an example URI such as "content://com.example.android.pets/pets/3",
-                // the selection will be "_id=?" and the selection argument will be a
-                // String array containing the actual ID of 3 in this case.
-                //
-                // For every "?" in the selection, we need to have an element in the selection
-                // arguments that will fill in the "?". Since we have 1 question mark in the
-                // selection, we have 1 String in the selection arguments' String array.
+
                 selection = ProductEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
 
@@ -132,13 +127,14 @@ public class ProductProvider extends ContentProvider {
 
     /**
      * Insert new data into the provider with the given ContentValues.
+
      */
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case PRODUCT:
-                return insertPet(uri, contentValues);
+                return insertProduct(uri, contentValues);
             default:
                 throw new IllegalArgumentException("Insertion is not supported for " + uri);
         }
@@ -148,7 +144,7 @@ public class ProductProvider extends ContentProvider {
      * Insert a pet into the database with the given content values. Return the new content URI
      * for that specific row in the database.
      */
-    private Uri insertPet(Uri uri, ContentValues values) {
+    private Uri insertProduct(Uri uri, ContentValues values) {
 
 
         String name = values.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
@@ -173,7 +169,15 @@ public class ProductProvider extends ContentProvider {
             throw new IllegalArgumentException("Product Requires Quantity");
         }
 
+
+        byte[] byteArray = values.getAsByteArray(ProductEntry.COLUMN_PRODUCT_IMAGE);
+        if (byteArray != null){
+            Bitmap imageProduct = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+
+        }
+
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
 
         long id = database.insert(ProductEntry.TABLE_NAME, null, values);
         if (id == -1) {
@@ -182,7 +186,7 @@ public class ProductProvider extends ContentProvider {
         }
 
         getContext().getContentResolver().notifyChange(uri, null);
-        //Insert a new pet into the pets database table with the given ContentValues
+        //Insert a new product into the products database table with the given ContentValues
 
         // Once we know the ID of the new row in the table,
         // return the new URI with the ID appended to the end of it
@@ -198,49 +202,49 @@ public class ProductProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         switch (match) {
             case PRODUCT:
-                return updatePet(uri, contentValues, selection, selectionArgs);
+                return updateProduct(uri, contentValues, selection, selectionArgs);
             case PRODUCT_ID:
-                // For the PET_ID code, extract out the ID from the URI,
-                // so we know which row to update. Selection will be "_id=?" and selection
-                // arguments will be a String array containing the actual ID.
+
                 selection = ProductContract.ProductEntry._ID + "=?";
                 selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
-                return updatePet(uri, contentValues, selection, selectionArgs);
+                return updateProduct(uri, contentValues, selection, selectionArgs);
             default:
                 throw new IllegalArgumentException("Update is not supported for " + uri);
         }
     }
 
     /**
-     * Update pets in the database with the given content values. Apply the changes to the rows
+     * Update product in the database with the given content values. Apply the changes to the rows
      * specified in the selection and selection arguments (which could be 0 or 1 or more pets).
      * Return the number of rows that were successfully updated.
      */
-    private int updatePet(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    private int updateProduct(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
         int rowsUpdated;
 
         String name = values.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
         if (name == null) {
 
-            throw new IllegalArgumentException("Pet requires name");
+            throw new IllegalArgumentException("Product requires name");
         }
 
-        Integer gender = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SIZE);
-        if (gender == null && ProductEntry.isValidSize(gender)) {
-            throw new IllegalArgumentException("Pet Requires Gender");
+        Integer size = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SIZE);
+        if (size != null && ProductEntry.isValidSize(size)) {
+            throw new IllegalArgumentException("Product Requires Gender");
         }
 
-        Integer weight = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
-        if (weight != null && weight < 0) {
+        Integer quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+        if (quantity != null && quantity < 0) {
 
-            throw new IllegalArgumentException("Pet Requires Weight");
+            throw new IllegalArgumentException("Product Requires qiantity");
         }
 
         if (values.size() == 0) {
 
             return 0;
         }
+
+
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
         rowsUpdated = database.update(ProductEntry.TABLE_NAME, values, selection, selectionArgs);
@@ -250,7 +254,7 @@ public class ProductProvider extends ContentProvider {
         return rowsUpdated;
 
 
-        // Update the selected pets in the pets database table with the given ContentValues
+        // Update the selected pets in the product database table with the given ContentValues
 
         // Return the number of rows that were affected
 

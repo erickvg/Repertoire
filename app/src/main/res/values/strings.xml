@@ -98,6 +98,7 @@
     <string name="email_subject">Product Order: <xliff:g>%s</xliff:g></string>
 
     <string name="action_sendmail">Send Mail</string>
+    <string name="buy">Sell</string>
 
 
 </resources>

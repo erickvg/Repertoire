@@ -34,6 +34,7 @@ public final class ProductContract {
         public final static String COLUMN_PRODUCT_QUANTITY = "quantity";
         public final static String COLUMN_PRODUCT_SIZE = "size";
         public final static String COLUMN_PRODUCT_IMAGE = "image";
+        public final static String COLUMN_PRODUCT_SALES = "sales";
 
         //Values for size.
 

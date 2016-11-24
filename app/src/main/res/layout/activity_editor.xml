@@ -131,7 +131,6 @@
                 android:id="@+id/order_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="submitOrder"
                 android:text="Place Order" />
         </RelativeLayout>
     </LinearLayout>

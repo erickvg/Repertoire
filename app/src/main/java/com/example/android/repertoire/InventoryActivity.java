@@ -68,10 +68,10 @@ public class InventoryActivity extends AppCompatActivity implements LoaderManage
         getLoaderManager().initLoader(URL_LOADER, null, this);
     }
 
-    private void deleteAllPets(){
+    private void deleteAllProducts(){
 
         int petsDeleted = getContentResolver().delete(ProductEntry.CONTENT_URI,null,null);
-        Log.v("CatalogActivity",petsDeleted + " pets deleted from database");
+        Log.v("InventoryActivity",petsDeleted + " pets deleted from database");
 
     }
 
@@ -90,7 +90,7 @@ public class InventoryActivity extends AppCompatActivity implements LoaderManage
         switch (item.getItemId()) {
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
-                deleteAllPets();
+                deleteAllProducts();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -103,6 +103,9 @@ public class InventoryActivity extends AppCompatActivity implements LoaderManage
                     ProductEntry._ID,
                     ProductEntry.COLUMN_PRODUCT_NAME,
                     ProductEntry.COLUMN_PRODUCT_PRICE,
+                    ProductEntry.COLUMN_PRODUCT_QUANTITY,
+                    ProductEntry.COLUMN_PRODUCT_SIZE
+
             };
 
             switch (id) {

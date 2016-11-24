@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.BaseColumns;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
@@ -48,6 +49,10 @@ import static com.example.android.repertoire.Data.ProductContract.ProductEntry;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private int quantityValue;
+
+    private  String spinnerSize;
+
     private Button mOrder;
 
     private Button mDecrement;
@@ -76,6 +81,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private EditText mPriceEditText;
 
+    private TextView mSalesTextView;
+
     private ImageView mImage;
 
     private Spinner mSizeSpinner;
@@ -87,6 +94,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private int mSize = ProductEntry.SIZE_SMALL;
 
     private FloatingActionButton mFab;
+
+    private int I_D;
     /**
      * Size of the product. The possible values are:
      * 0 for small, 1 for medium, 2 for large.
@@ -127,6 +136,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mDecrement = (Button) findViewById(R.id.decrement_button);
         mIncrement = (Button) findViewById(R.id.increment_button);
         mOrder = (Button) findViewById(R.id.order_button);
+        mSalesTextView = (TextView) findViewById(R.id.sales);
 
 
         mNameEditText.setOnTouchListener(mTouchListener);
@@ -267,6 +277,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String imageString = mImage_Uri.getText().toString().trim();
 
 
+
         // Check if this is supposed to be a new item
         // and check if all the fields in the editor are blank
 
@@ -274,6 +285,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 TextUtils.isEmpty(nameString) &&
                 TextUtils.isEmpty(priceString) &&
                 TextUtils.isEmpty(quantityString) &&
+                TextUtils.isEmpty(imageString) &&
                 mSize == ProductEntry.SIZE_SMALL) {
             // Since no fields were modified, we can return early without creating a new item.
             // No need to create ContentValues and no need to do any ContentProvider operations.
@@ -284,19 +296,18 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // Create a ContentValues object where column names are the keys,
         // and item attributes from the editor are the values.
         ContentValues values = new ContentValues();
+        values.put(ProductEntry._ID, BaseColumns._ID);
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);
+        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,quantityString);
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageString);
+        values.put(ProductEntry.COLUMN_PRODUCT_SALES,0);
 
-        // If the quantity is not provided by the user, don't try to parse the string into an
-        // integer value. Use 0 by default.
-
-        int quantity = 0;
         if (!TextUtils.isEmpty(quantityString)) {
             quantity = Integer.parseInt(quantityString);
         }
-        values.put(ProductEntry.COLUMN_PRODUCT_SIZE, quantity);
+        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
 
         // If the price is not provided by the user, don't try to parse the string into an
         // integer value. Use 0 by default.
@@ -307,7 +318,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, price);
 
-        // Determine if this is a new or existing item by checking if mCurrentItemUri is null or not
+        // Determine if this is a new or existing item by checking if mCurrentProductUri is null or not
 
         if (mCurrentProductUri == null) {
             // This is a NEW item, so insert a new item into the provider,
@@ -383,6 +394,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private void displayQuantity(int quantity) {
         TextView quantityTextView = (TextView) findViewById(R.id.quantity_text_view);
         quantityTextView.setText("" + quantity);
+
     }
 
     @Override
@@ -573,17 +585,23 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             mQuantityTextView.setText(Integer.toString(quantity));
             mImage.setImageBitmap(BitmapFactory.decodeFile(String.valueOf(mImage)));
 
+
             switch (size) {
 
-                case ProductEntry.SIZE_LARGE:
-                    mSizeSpinner.setSelection(2);
+                case ProductEntry.SIZE_SMALL:
+                    mSizeSpinner.setSelection(0);
+                    spinnerSize = "Small";
                     break;
                 case ProductEntry.SIZE_MEDIUM:
                     mSizeSpinner.setSelection(1);
+                    spinnerSize = "Medium";
+                    break;
+                case ProductEntry.SIZE_LARGE:
+                    mSizeSpinner.setSelection(2);
+                    spinnerSize = "Large";
                     break;
                 default:
                     mSizeSpinner.setSelection(0);
-                    break;
 
             }
 
@@ -591,7 +609,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
             stringBuilder.append("ProductName: " + name + "\n");
             stringBuilder.append("Price: $" + Float.toString(price) + "\n");
-            stringBuilder.append("Min Quantity Required: $" + 10);
+            stringBuilder.append("Min Quantity Required: $" + 10 + "\n");
+            stringBuilder.append("Size: " + spinnerSize +"\n");
+            stringBuilder.append(mImage_Uri);
 
             String emaill = getString(R.string.email_subject);
             final Intent orderIntent = new Intent(Intent.ACTION_SENDTO);
@@ -605,7 +625,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 public void onClick(View view) {
                     if (orderIntent.resolveActivity(getPackageManager()) != null) {
                         startActivity(orderIntent);
-
                     }
         }
     }
