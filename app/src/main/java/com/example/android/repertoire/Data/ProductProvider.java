@@ -87,7 +87,7 @@ public class ProductProvider extends ContentProvider {
 
                 cursor = database.query(ProductEntry.TABLE_NAME, projection, selection, selectionArgs,
                         null, null, sortOrder);
-                // For the Product code, query the pets table directly with the given
+                // For the Product code, query the product table directly with the given
                 // projection, selection, selection arguments, and sort order. The cursor
                 // could contain multiple rows of the product table.
                 // Perform database query on product table
@@ -174,6 +174,12 @@ public class ProductProvider extends ContentProvider {
         if (byteArray != null){
             Bitmap imageProduct = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
 
+        }
+
+        Integer sales = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SALES);
+        if (sales != null && sales < 0){
+
+            throw new IllegalArgumentException("No Product has been sold yet.");
         }
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();

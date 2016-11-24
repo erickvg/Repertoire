@@ -302,7 +302,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY,quantityString);
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageString);
-        values.put(ProductEntry.COLUMN_PRODUCT_SALES,0);
+        values.put(ProductEntry.COLUMN_PRODUCT_SALES,quantityString);
 
         if (!TextUtils.isEmpty(quantityString)) {
             quantity = Integer.parseInt(quantityString);
