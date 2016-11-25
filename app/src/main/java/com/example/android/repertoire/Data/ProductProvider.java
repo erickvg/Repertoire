@@ -220,29 +220,33 @@ public class ProductProvider extends ContentProvider {
      */
     private int updateProduct(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 
-        int rowsUpdated;
+
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_NAME)){
 
         String name = values.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
         if (name == null) {
 
             throw new IllegalArgumentException("Product requires name");
         }
-
-        Integer size = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SIZE);
-        if (size != null && ProductEntry.isValidSize(size)) {
-            throw new IllegalArgumentException("Product Requires Gender");
         }
 
-        Integer quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
-        if (quantity != null && quantity < 0) {
+       if (values.containsKey(ProductEntry.COLUMN_PRODUCT_PRICE)){
+           int price = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_PRICE);
+       }
 
-            throw new IllegalArgumentException("Product Requires quantity");
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_QUANTITY)){
+
+            int quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
         }
 
-        Integer sales = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SALES);
-        if (sales != null && sales < 0){
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_SIZE)){
 
-            throw new IllegalArgumentException("Product sales are 0");
+            int size = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SIZE);
+        }
+
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_SALES)){
+
+            int sales = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_SALES);
         }
 
         if (values.size() == 0) {
@@ -253,7 +257,7 @@ public class ProductProvider extends ContentProvider {
 
 
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
-        rowsUpdated = database.update(ProductEntry.TABLE_NAME, values, selection, selectionArgs);
+        int rowsUpdated = database.update(ProductEntry.TABLE_NAME, values, selection, selectionArgs);
         if (rowsUpdated != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
         }

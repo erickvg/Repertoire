@@ -81,8 +81,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     private EditText mPriceEditText;
 
-    private TextView mSalesTextView;
-
     private ImageView mImage;
 
     private Spinner mSizeSpinner;
@@ -136,8 +134,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mDecrement = (Button) findViewById(R.id.decrement_button);
         mIncrement = (Button) findViewById(R.id.increment_button);
         mOrder = (Button) findViewById(R.id.order_button);
-        mSalesTextView = (TextView) findViewById(R.id.sales);
-
 
         mNameEditText.setOnTouchListener(mTouchListener);
         mPriceEditText.setOnTouchListener(mTouchListener);
@@ -275,7 +271,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String quantityString = mQuantityTextView.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
         String imageString = mImage_Uri.getText().toString().trim();
-        String salesString = mSalesTextView.getText().toString().trim();
 
 
         // Check if this is supposed to be a new item
@@ -302,7 +297,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantityString);
         values.put(ProductEntry.COLUMN_PRODUCT_IMAGE, imageString);
-        values.put(ProductEntry.COLUMN_PRODUCT_SALES, salesString);
+        values.put(ProductEntry.COLUMN_PRODUCT_SALES, 0);
 
         if (!TextUtils.isEmpty(quantityString)) {
             quantity = Integer.parseInt(quantityString);
@@ -587,7 +582,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             mPriceEditText.setText(Integer.toString(price));
             mQuantityTextView.setText(Integer.toString(quantity));
             mImage.setImageBitmap(BitmapFactory.decodeFile(String.valueOf(mImage)));
-            mSalesTextView.setText(Integer.toString(sales));
+
 
 
             switch (size) {

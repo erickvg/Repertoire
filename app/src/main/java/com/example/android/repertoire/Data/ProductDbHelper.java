@@ -12,7 +12,7 @@ import static com.example.android.repertoire.Data.ProductContract.ProductEntry;
 
 public class ProductDbHelper extends SQLiteOpenHelper{
 
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
     public static final String DATABASE_NAME = "inventory.db";
 
     public ProductDbHelper (Context context){
@@ -27,18 +27,18 @@ public class ProductDbHelper extends SQLiteOpenHelper{
         String SQL_PRODUCT_TABLE = "CREATE TABLE " + ProductEntry.TABLE_NAME + " ("
                 + ProductEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + ProductEntry.COLUMN_PRODUCT_NAME + " TEXT NOT NULL, "
-                + ProductEntry.COLUMN_PRODUCT_PRICE + " INTEGER NOT NULL DEFAULT 0, "
+                + ProductEntry.COLUMN_PRODUCT_PRICE + " INTEGER NOT NULL, "
                 + ProductEntry.COLUMN_PRODUCT_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
                 + ProductEntry.COLUMN_PRODUCT_SIZE + " INTEGER NOT NULL, "
                 + ProductEntry.COLUMN_PRODUCT_IMAGE + " TEXT NOT NULL, "
-                + ProductEntry.COLUMN_PRODUCT_SALES + " INTEGER);";
+                + ProductEntry.COLUMN_PRODUCT_SALES + " INTEGER NOT NULL);";
         db.execSQL(SQL_PRODUCT_TABLE);
 
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP IF TABLE EXISTS" + ProductEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + ProductEntry.TABLE_NAME);
         onCreate(db);
 
 
