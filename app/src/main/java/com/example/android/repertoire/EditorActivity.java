@@ -14,7 +14,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.BaseColumns;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
@@ -264,8 +263,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      */
 
     public void saveProduct() {
-        // Read from input fields
-        // Use trim to eliminate leading or trailing white space
+
 
         String nameString = mNameEditText.getText().toString().trim();
         String quantityString = mQuantityTextView.getText().toString().trim();
@@ -291,7 +289,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // Create a ContentValues object where column names are the keys,
         // and item attributes from the editor are the values.
         ContentValues values = new ContentValues();
-        values.put(ProductEntry._ID, BaseColumns._ID);
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
         values.put(ProductEntry.COLUMN_PRODUCT_SIZE, mSize);

@@ -80,7 +80,7 @@ public class ProductCursorAdapter extends CursorAdapter {
         int sales = cursor.getInt(salesColumnIndex);
         byte[] productImage = cursor.getBlob(imageColumnIndex);
         if (productImage != null) {
-            Bitmap bmpProduct = BitmapFactory.decodeByteArray(productImage, 1, productImage.length);
+            Bitmap bmpProduct = BitmapFactory.decodeByteArray(productImage, 0, productImage.length);
             imageView.setImageBitmap(bmpProduct);
         }
 
